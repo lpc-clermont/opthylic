@@ -1,0 +1,27 @@
++nameLaTeX $ee\mu\mu$
+
++bg ttbar ./histos/fBg1.root(histo)
+.nameLaTeX $t\bar{t}$
+.syst Syst1 ./histos/fBg1Syst1up.root(histo) ./histos/fBg1Syst1down.root(histo) 
+.syst Syst2 ./histos/fBg1Syst2up.root(histo) ./histos/fBg1Syst2down.root(histo) 
+
++bg ttWZ ./histos/fBg2.root(histo)
+.nameLaTeX $t\bar{t}W$
+.syst Syst1 ./histos/fBg2Syst1up.root(histo) ./histos/fBg2Syst1down.root(histo)
+.syst Syst3 ./histos/fBg2Syst3up.root(histo) ./histos/fBg2Syst3down.root(histo)
+.syst Syst6 0.1 -0.1
+
++bg QCD ./histos/fBg3.root(histo)
+.syst Syst2 ./histos/fBg3Syst2up.root(histo) ./histos/fBg3Syst2down.root(histo)
+.syst Syst4 ./histos/fBg3Syst4up.root(histo) ./histos/fBg3Syst4down.root(histo)
+.syst Syst6 0.06 -0.02
+
++bg WW ./histos/fBg4.root(histo)
+.syst Syst1 ./histos/fBg4Syst1up.root(histo) ./histos/fBg4Syst1down.root(histo)
+
++sig Sig ./histos/fSig.root(histo)
+.syst Syst1 ./histos/fSigSyst1up.root(histo) ./histos/fSigSyst1down.root(histo)
+.syst Syst2 ./histos/fSigSyst2up.root(histo) ./histos/fSigSyst2down.root(histo)
+.syst Syst5 ./histos/fSigSyst5up.root(histo) ./histos/fSigSyst5down.root(histo)
+
++data ./histos/fData.root(histo)

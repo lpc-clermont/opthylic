@@ -1,0 +1,24 @@
+# See paper for syntax description
+
++nameLaTeX $ee$
+
++bg ttbar 25 7
+.nameLaTeX $t\bar{t}$
+.syst Syst1 0.1 -0.3
+.syst Syst2 0.3 -0.2
+
++bg ttWZ 25 12
+.nameLaTeX $t\bar{t}W$
+.syst Syst1 0.2 -0.05
+.syst Syst3 -0.06 0.15
+
++bg QCD 33 3.5
+.syst Syst2 -0.1 0.3
+.syst Syst4 -0.6 0.6
+
++sig Sig 5 1
+.syst Syst1 0.06 -0.06
+.syst Syst2 0.05 -0.3
+.syst Syst5 0.03 -0.01
+
++data 100

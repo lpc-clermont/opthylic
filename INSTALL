@@ -1,0 +1,406 @@
+#!/bin/bash
+
+###################################################################################
+## This file is part the software OpTHyLiC
+## Copyright © 2015 Laboratoire de Physique Corpusculaire de Clermont-Ferrand
+## Developpers: David Calvet, Emmanuel Busato, Timothée Theveneaux-Pelzer
+## Contact: opthylic@in2p3.fr
+##
+##     This program is free software: you can redistribute it and/or modify
+##     it under the terms of the GNU General Public License as published by
+##     the Free Software Foundation, either version 3 of the License, or
+##     (at your option) any later version.
+##
+##     This program is distributed in the hope that it will be useful,
+##     but WITHOUT ANY WARRANTY; without even the implied warranty of
+##     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##     GNU General Public License for more details.
+##
+##     You should have received a copy of the GNU General Public License
+##     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###################################################################################
+
+usage() # help menu
+{
+    echo "Installation script for OpTHyLiC"
+    echo "Usage: ./INSTALL [options]"
+    echo "Options:"
+    echo "  -h, --help"
+    echo "      this help menu"
+    echo "  -e, --executable"
+    echo "      compile an executable with gcc instead of ROOT libraries with CINT for interactive mode"
+    echo "  -C, --C++11"
+    echo "      uses C++11 features"
+    echo "  --permissive"
+    echo "      do not check the available root and gcc versions before enabling C++11 features"
+    echo "  --clean"
+    echo "      clean libraries and Makefile"
+    echo "  --warranty"
+    echo "      print warranty disclaimer for this software"
+    echo "  --redistribute-conditions"
+    echo "      print conditions for redistributing this software"
+}
+
+invite() # show basic information about the program
+{
+/bin/cat <<EOM
+    OpTHyLiC Copyright © 2015 Laboratoire de Physique Corpusculaire de Clermont-Ferrand
+    This program comes with ABSOLUTELY NO WARRANTY; for details type "INSTALL --warranty".
+    This is free software, and you are welcome to redistribute it
+    under certain conditions; type "INSTALL --redistribute-conditions" for details.
+
+    The full text of the licence is available in the file COPYING disributed along with this software.
+
+EOM
+}
+
+warranty() # show warranty disclaimer under GPL licence version 3.0
+{
+/bin/cat <<EOM
+    OpTHyLiC Copyright © 2015 Laboratoire de Physique Corpusculaire de Clermont-Ferrand
+
+      THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+    APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+    HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
+    OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+    IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+    ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+      IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+    WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+    THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+    GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+    USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+    DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+    PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+    EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGES.
+
+    The full text of the licence is available in the file COPYING disributed along with this software.
+
+EOM
+}
+
+redistribute() # show conditions for redistriution under GPL licence version 3.0
+{
+/bin/cat <<EOM
+    OpTHyLiC Copyright © 2015 Laboratoire de Physique Corpusculaire de Clermont-Ferrand
+
+      You may convey verbatim copies of the Program's source code as you
+    receive it, in any medium, provided that you conspicuously and
+    appropriately publish on each copy an appropriate copyright notice;
+    keep intact all notices stating that this License and any
+    non-permissive terms added in accord with section 7 apply to the code;
+    keep intact all notices of the absence of any warranty; and give all
+    recipients a copy of this License along with the Program.
+
+      You may charge any price or no price for each copy that you convey,
+    and you may offer support or warranty protection for a fee.
+
+    The full text of the licence is available in the file COPYING disributed along with this software.
+
+EOM
+}
+
+write_Makefile() # create Makefile
+{
+# initialise EXEC variable to void
+EXEC=
+# initialise CPP11 variable to void
+CPP11=
+# loop on parsed options
+while [ "$1" != "" ]; do
+    case $1 in
+        -e | --executable )    EXEC=1
+                                ;;
+        -C | --C++11 )         CPP11=1
+    esac
+    shift
+done
+if [ "$EXEC" = "1" ]; then
+    echo "Creating Makefile for executable"
+    rm -f Makefile
+/bin/cat <<EOM >Makefile
+CXXFLAGS= `root-config --cflags`
+LIBS = `root-config --glibs`
+
+EOM
+  if [ "$CPP11" = "1" ]; then
+/bin/cat <<EOM >>Makefile
+OPTCOMP =  -Wall -fexceptions -fPIC -O3 -DEXECUTABLE -DCPP11 -std=c++11 -pthread
+EOM
+  else
+/bin/cat <<EOM >>Makefile
+OPTCOMP =  -Wall -fexceptions -fPIC -O3 -DEXECUTABLE
+EOM
+  fi
+/bin/cat <<EOM >>Makefile
+
+CXX = g++
+
+BIN	= ./examples
+
+
+SRC = OpTHyLiC.C OTHAlgorithms.C OTHBase.C OTHChannel.C OTHMuVsObs.C OTHObserved.C OTHPdfGenerator.C OTHRdmGenerator.C OTHSample.C OTHSingleSyst.C OTHSystematics.C OTHYieldWithUncert.C OTHShape.C OTHShapeSyst.C
+HEADS = \$(patsubst %.C,%.h,\$(SRC))
+INCPATH = \$(realpath ./)
+LIBPATH = \$(realpath ./)
+
+
+EXESRC	=	\$(wildcard \$(BIN)/run*.C)
+EXE	=	\$(patsubst %.C,%.exe,\$(EXESRC))
+
+SHAREDLIB = \$(patsubst %.C,lib%.so,\$(SRC))
+OTHLibs = \$(addprefix -l,\$(basename \$(SRC)))
+
+all	:	shared exe
+
+shared	:	\$(SHAREDLIB)
+exe	:	\$(EXE)
+
+lib%.so	:	%.C %.h
+	@echo "Building shared library : " \$@
+	@\$(CXX) -shared \$(CXXFLAGS) \$(OPTCOMP) -o \$@ \$<
+
+%.exe:	%.C \$(SHAREDLIB)
+	@echo "Building executable : " \$@
+	@\$(CXX) \$(CXXFLAGS) \$(OPTCOMP) -o \$@ $< \$(LIBS) \$(OTHLibs) -I\$(INCPATH) -L\$(LIBPATH)
+
+clean	:
+	@echo "cleaning shared librairies and executables"
+	@rm -f \$(SHAREDLIB) \$(EXE)
+EOM
+
+else
+    echo "Creating Makefile for interpreter"
+    rm -f Makefile
+/bin/cat <<EOM >Makefile
+all	:
+	  root -b -q Compile.C
+
+clean	:
+	@echo "cleaning shared librairies and root dictionnaries"
+	@rm -f *.so *.d *.pcm *_ACLiC_*
+EOM
+fi
+}
+
+write_ROOT_Compile_Script() # create root compile script
+{
+  # initialise CPP11 variable to void
+  CPP11=
+  # loop on parsed options
+  while [ "$1" != "" ]; do
+      case $1 in
+	  -C | --C++11 )         CPP11=1
+      esac
+      shift
+  done
+  
+  echo "Creating ROOT compile script Compile.C"
+  rm -f Compile.C
+  
+/bin/cat <<EOM >Compile.C
+void Compile() {
+EOM
+  if [ "$CPP11" = "1" ]; then
+/bin/cat <<EOM >>Compile.C
+  gSystem->AddIncludePath(" -I${PWD}");
+  gSystem->AddIncludePath(" -DCPP11");
+EOM
+  fi
+/bin/cat <<EOM >>Compile.C
+  gROOT->LoadMacro("OTHRdmGenerator.C+");
+  gROOT->LoadMacro("OTHSystematics.C+");
+  gROOT->LoadMacro("OTHAlgorithms.C+");
+  gROOT->LoadMacro("OTHBase.C+");
+  gROOT->LoadMacro("OTHPdfGenerator.C+");
+  gROOT->LoadMacro("OTHSingleSyst.C+");
+  gROOT->LoadMacro("OTHYieldWithUncert.C+");
+  gROOT->LoadMacro("OTHSample.C+");
+  gROOT->LoadMacro("OTHObserved.C+");
+  gROOT->LoadMacro("OTHMuVsObs.C+");
+  gROOT->LoadMacro("OTHChannel.C+");
+  gROOT->LoadMacro("OTHShapeSyst.C+");
+  gROOT->LoadMacro("OTHShape.C+");
+  gROOT->LoadMacro("OpTHyLiC.C+");
+}
+EOM
+}
+
+write_ROOT_Load_Script() # create root script to load libraries
+{
+  # initialise CPP11 variable to void
+  CPP11=
+  # loop on parsed options
+  while [ "$1" != "" ]; do
+      case $1 in
+	  -C | --C++11 )         CPP11=1
+      esac
+      shift
+  done
+  
+  echo "Creating ROOT load script example/load.C"
+  rm -f examples/load.C
+  
+  if [ "$CPP11" = "1" ]; then
+/bin/cat <<EOM >examples/load.C
+{
+  gSystem->AddIncludePath(" -DCPP11");
+  gSystem->Load("OpTHyLiC_C");
+}
+EOM
+  else
+/bin/cat <<EOM >examples/load.C
+{
+  gSystem->Load("OpTHyLiC_C");
+}
+EOM
+  fi
+}
+
+clean() # make clean and delete makefile
+{
+    echo "Cleaning directory"
+    if [[ -e "Makefile" ]]; then
+      make clean
+    fi
+    rm -f Compile.C
+    rm -f examples/load.C
+    rm -f Makefile
+    rm -f setup.sh setup.csh
+}
+
+
+###### main script ######
+
+# initialise EXEC variable to void
+EXEC=
+# initialise CPP11 variable to void
+CPP11=
+# initialise PERM variable to void
+PERM=
+# loop on parsed options
+while [ "$1" != "" ]; do
+    case $1 in
+        -h | --help )                   usage
+					exit
+					;;
+        -e | --executable )             EXEC=1
+                                	;;
+        -C | --C++11 )                  CPP11=1
+                                	;;
+        --permissive )                  PERM=1
+                                	;;
+        --clean )                       clean
+                                	exit
+                                	;;
+        --warranty )                    warranty
+                                	exit
+                                	;;
+        --redistribute-conditions )     redistribute
+                                	exit
+                                	;;
+        * )                             usage
+                                	exit 1
+    esac
+    shift
+done
+
+invite
+
+# checking if root is available
+if [[ -n "${ROOTSYS+1}" ]]; then
+  echo "Using ROOT installed in $ROOTSYS"
+else
+  echo "ERROR ! ROOT is not defined..."
+  exit 1
+fi
+
+# in case of C++ features are requested, checking if recent enough versions of gcc and root are available
+# but only if --permissive option was not parsed to INSTALL script
+if [ "$CPP11" = "1" ]; then
+  echo "C++11 features have been requested"
+  # checking if gcc version is 4.8.1 or newer (thanks to http://stackoverflow.com/a/17947005 )
+  # GCC_VER=$(gcc -dumpversion | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$$/&00/')
+  GCC_VER=$(gcc -dumpversion | sed -e 's/\.\([0-9]\)/\1/g')
+  if [ "$GCC_VER" -ge "481" ]; then
+    echo "GCC version is" $(gcc -dumpversion)
+    echo "C++ features should be ok if running in executable mode"
+  else
+    echo "GCC version older than 4.8.1"
+    if [ "$PERM" = "1" ]; then
+      echo "Will try to enable C++11 features though not recommended, as --permissive option was used"
+    else
+      echo "C++11 features will not be enabled - to bypass this limitation, use option --permissive"
+      CPP11=
+    fi
+  fi
+fi
+
+if [ "$CPP11" = "1" ]; then
+  # if running in interpreter mode, need to also check the version of root
+  if [ "$EXEC" != "1" ]; then
+    # checking if root version is 6.02/03 or newer
+    ROOT_VER=$(root-config --version | sed -e 's/\.\([0-9]\)/\1/g' -e 's/\/\([0-9]\)/\1/g' | cut -c1-5)
+    if [ "$ROOT_VER" -ge "60203" ]; then
+      echo "ROOT version is "$(root-config --version)
+      echo "C++ features should be ok also running in interpreter mode"
+    else
+      echo "ROOT version older than 6.02/03"
+      if [ "$PERM" = "1" ]; then
+      echo "Will try to enable C++11 features though not recommended, as --permissive option was used"
+      else
+	echo "C++11 features will not be enabled - to bypass this limitation, use option --permissive"
+	CPP11=
+      fi
+    fi
+  fi
+fi
+
+# preparing Makefile and compile, depending on options
+if [ "$EXEC" = "1" ]; then
+    rm -f *.so
+    echo "Compiling an executable with gcc"
+    if [ "$CPP11" = "1" ]; then
+      echo "Using C++11 features"
+      write_Makefile -e -C
+    else
+      write_Makefile -e
+    fi
+else
+    rm -f *.so *.d
+    echo "Compiling ROOT libraries with CINT"
+    if [ "$CPP11" = "1" ]; then
+#       echo "Request to use C++11 features ignored as not yet available in CINT interpreter"
+      echo "Using C++11 features"
+      write_ROOT_Compile_Script -C
+      write_ROOT_Load_Script -C
+    else
+      write_ROOT_Compile_Script
+      write_ROOT_Load_Script
+    fi
+    write_Makefile
+fi
+
+# write setup script to be run each time (sh family)
+rm -f setup.sh
+cat > setup.sh <<EOF
+if [[ -n "\${LD_LIBRARY_PATH+1}" ]]; then
+  export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${PWD}
+else
+  export LD_LIBRARY_PATH=${PWD}
+fi
+EOF
+
+# write setup script to be run each time (csh family)
+rm -f setup.csh
+cat > setup.csh <<EOF
+if ( \$?LD_LIBRARY_PATH == 0 ) then
+  setenv LD_LIBRARY_PATH ${PWD}
+else
+  setenv LD_LIBRARY_PATH \${LD_LIBRARY_PATH}:${PWD}
+endif
+EOF

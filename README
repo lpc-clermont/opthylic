@@ -1,0 +1,39 @@
+--------------
+Prerequisites:
+--------------
+To use OpTHyLiC, a version of the ROOT software is needed. Versions as old as 5.28/00b have been tested, but older ones may also be ok.
+
+OpTHyLiC can be run with ROOT macros, but executables can also be compiled. In that case, the gcc compiler is needed. Versions as old as 4.3.0 have been tested, but older ones may also be ok. To use a different compiler, one would have to modify the INSTALL script mentioned below.
+
+If the features involving the C++11 standard are to be used, gcc 4.8.2 or newer is needed for creating executables. For running OpTHyLiC with ROOT macros with these C++11 features, ROOT 6.02/03 or newer is required.
+
+-----------------------
+Installation and usage:
+-----------------------
+To install OpTHyLiC, the tarball containing the source code must be extracted in some directory: 
+
+    > tar zxvf OpTHyLiC_v2.04.tar.gz
+
+Then, the installation is done in three steps: 
+
+
+    > ./INSTALL <options>
+    > make
+    > source setup.[c]sh
+
+In the first step, the compilation is prepared by creating a Makefile which structure depends on how OpTHyLiC is intended to be used. Several options can be parsed to the INSTALL script in order to configure the installation. Without any option, the INSTALL script prepares for the use of OpTHyLiC with ROOT macros, without the C++11 features. The available options can be listed by using the --help (or -h) option.
+
+In the second step, the shared libraries are compiled according to the Makefile.
+
+Finally, the script sourced in the last step updates the LD_LIBRARY_PATH environment variable with the directory where the shared libraries are available.
+
+Once installed, the libraries can be used from anywhere after having sourced the setup.[c]sh script. The example script runLimits.C, available in the examples/ directory, illustrates the computation of limits. It can be used with the following syntax:
+
+    > cd examples
+    > root -l load.C 'runLimits.C("input1.dat","input2.dat")'
+
+
+---------------------
+Online documentation:
+---------------------
+All details can be found in the online documentation: http://opthylic.in2p3.fr/codedoc.html

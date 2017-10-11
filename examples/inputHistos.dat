@@ -1,0 +1,31 @@
++nameLaTeX $ee\mu\mu$
+
++setup
+.directory ./histos
+.histoName histo
+
++bg ttbar fBg1.root
+.nameLaTeX $t\bar{t}$
+.syst Syst1 fBg1Syst1up.root fBg1Syst1down.root 
+.syst Syst2 fBg1Syst2up.root fBg1Syst2down.root 
+
++bg ttWZ fBg2.root
+.nameLaTeX $t\bar{t}W$
+.syst Syst1 fBg2Syst1up.root fBg2Syst1down.root
+.syst Syst3 fBg2Syst3up.root fBg2Syst3down.root
+.syst Syst6 0.1 -0.1
+
++bg QCD fBg3.root
+.syst Syst2 fBg3Syst2up.root fBg3Syst2down.root
+.syst Syst4 fBg3Syst4up.root fBg3Syst4down.root
+.syst Syst6 0.06 -0.02
+
++bg WW fBg4.root
+.syst Syst1 fBg4Syst1up.root fBg4Syst1down.root
+
++sig Sig fSig.root
+.syst Syst1 fSigSyst1up.root fSigSyst1down.root
+.syst Syst2 fSigSyst2up.root fSigSyst2down.root
+.syst Syst5 fSigSyst5up.root fSigSyst5down.root
+
++data fData.root
